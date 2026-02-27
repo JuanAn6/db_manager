@@ -1,1 +1,1 @@
-# javafx_test
+# javafx db manager
