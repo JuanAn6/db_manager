@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.manager.controller.RegisterController"
+           alignment="CENTER">
+
+    <VBox spacing="15"
+          maxWidth="300"
+          maxHeight="200"
+          alignment="CENTER"
+          styleClass="card">
+
+        <Label text="Registro de Usuario"
+               style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+
+        <TextField fx:id="usernameField"
+                   promptText="Usuario"/>
+
+        <PasswordField fx:id="passwordField"
+                       promptText="Contraseña"/>
+
+        <Button text="Registrar"
+                maxWidth="Infinity"
+                onAction="#handleRegister"/>
+
+    </VBox>
+
+</StackPane>

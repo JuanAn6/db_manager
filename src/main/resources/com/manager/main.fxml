@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.FXCollections?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            stylesheets="@style.css"
+            fx:controller="com.manager.controller.MainController">
+
+    <top>
+        <MenuBar>
+            <menus>
+                <Menu text="Opciones">
+                    <items>
+                        <MenuItem text="Registrar Usuario"
+                                  onAction="#goToRegister"/>
+                        <MenuItem text="Inicio"
+                                  onAction="#goToHome"/>
+                    </items>
+                </Menu>
+                <Menu text="View">
+                    <items>
+                        <CheckMenuItem text="Show lateral menu"
+                                    fx:id="toggleSideMenu"
+                                    selected="true"
+                                    onAction="#toggleSideMenu"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+    </top>
+
+    <center>
+        
+        <SplitPane fx:id="splitPane" dividerPositions="0.1">
+            <!-- Lateral panel -->
+            <VBox fx:id="sideMenu">
+                <Label text="Menú lateral"/>
+                <TreeView fx:id="menuTree"/>
+            </VBox>
+            <!-- Main content -->
+            <StackPane fx:id="contentPane"/>
+        </SplitPane>
+    </center>
+
+</BorderPane>

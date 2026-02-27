@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.manager.controller.HomeController">
+
+    <center>
+        <TableView fx:id="tableView">
+            <columns>
+                <TableColumn fx:id="nameColumn" text="Nombre" />
+                <TableColumn fx:id="ageColumn" text="Edad" />
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>
