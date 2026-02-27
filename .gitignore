@@ -1,1 +1,27 @@
-./target/*
+# Maven build output
+/target/
+
+# Eclipse, IntelliJ, NetBeans
+*.class
+*.log
+*.tmp
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# IDE específicos (opcional, según uses alguno)
+.idea/
+*.iml
+*.ipr
+*.iws
+*.project
+*.classpath
+.settings/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Dependencias local
+/.mvn/
+/dependency-reduced-pom.xml
+/release.properties
