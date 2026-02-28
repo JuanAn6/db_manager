@@ -33,12 +33,16 @@ public class MainController {
     @FXML
     private CheckMenuItem toggleSideMenu;
 
+
+    private ConnectionController connectionController;
+
     @FXML
     public void initialize() {
         loadView("home.fxml"); // vista inicial
-
         loadTreeMenu();
 
+        connectionController = new ConnectionController();
+        connectionController.testConnection();
     }
 
     @FXML

@@ -15,7 +15,7 @@ public class ConnectionController {
             connectionSql.connect(
                 "jdbc:mysql://localhost:3306/",
                 "root",
-                "1234"
+                ""
             );
 
             List<Database> dbs = connectionSql.getDatabases();
