@@ -11,9 +11,14 @@ public class App extends Application {
         SceneManager.setStage(stage);
         SceneManager.load("main.fxml");
 
-        stage.setMaximized(true);
+        // give a predefined size and center on screen
+        stage.setWidth(1000);
+        stage.setHeight(700);
+        stage.centerOnScreen();
 
-        stage.setTitle("Mi primera app JavaFX");
+        // stage.setMaximized(true);
+
+        stage.setTitle("DB Manager");
         stage.show();
     }
 

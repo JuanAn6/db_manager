@@ -13,10 +13,12 @@
             <menus>
                 <Menu text="Opciones">
                     <items>
-                        <MenuItem text="Registrar Usuario"
+                        <MenuItem text="Register User"
                                   onAction="#goToRegister"/>
                         <MenuItem text="Inicio"
                                   onAction="#goToHome"/>
+                        <MenuItem text="New Connection"
+                                  onAction="#openNewConnection"/>
                     </items>
                 </Menu>
                 <Menu text="View">
@@ -33,7 +35,7 @@
 
     <center>
         
-        <SplitPane fx:id="splitPane" dividerPositions="0.1">
+        <SplitPane fx:id="splitPane" dividerPositions="0.3">
             <!-- Lateral panel -->
             <VBox fx:id="sideMenu">
                 <Label text="Menú lateral"/>

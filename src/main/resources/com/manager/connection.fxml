@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.manager.controller.ConnectionDialogController"
+      spacing="10"
+      alignment="CENTER"
+      stylesheets="@style.css"
+      styleClass="card">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <Label text="Nueva conexión SQL" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <TextField fx:id="aliasField" promptText="Alias (opcional)"/>
+    <TextField fx:id="urlField" promptText="URL JDBC (ej. jdbc:mysql://localhost:3306/)"/>
+    <TextField fx:id="userField" promptText="Usuario"/>
+    <PasswordField fx:id="passwordField" promptText="Contraseña"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancelar" onAction="#handleCancel"/>
+        <Button text="Crear" onAction="#handleCreate" defaultButton="true"/>
+    </HBox>
+</VBox>
