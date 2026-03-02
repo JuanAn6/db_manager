@@ -11,9 +11,9 @@ public class App extends Application {
         SceneManager.setStage(stage);
         SceneManager.load("main.fxml");
 
-        // give a predefined size and center on screen
-        stage.setWidth(1000);
-        stage.setHeight(700);
+        // initial window size
+        stage.setWidth(1650);
+        stage.setHeight(1080);
         stage.centerOnScreen();
 
         // stage.setMaximized(true);

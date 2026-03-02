@@ -1,15 +1,22 @@
 package com.manager.controller;
 
 import javafx.fxml.FXML;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import com.manager.model.ConnectionSql;
 
 public class ConnectionDialogController {
 
+    @FXML private VBox selectorPane;
+    @FXML private VBox formPane;
+    @FXML private Label selectedDbLabel;
     @FXML private TextField aliasField;
     @FXML private TextField urlField;
     @FXML private TextField userField;
@@ -17,9 +24,41 @@ public class ConnectionDialogController {
 
     // reference to main controller so we can add the newly created connection
     private MainController mainController;
+    private String selectedDatabaseType = "MySQL";
 
     public void setMainController(MainController controller) {
         this.mainController = controller;
+    }
+
+    @FXML
+    public void initialize() {
+        updateSelectedDatabaseLabel();
+    }
+
+    @FXML
+    private void handleDatabaseSelection(ActionEvent event) {
+        if (!(event.getSource() instanceof Button button)) {
+            return;
+        }
+
+        Object userData = button.getUserData();
+        if (userData instanceof String dbType && !dbType.isBlank()) {
+            selectedDatabaseType = dbType;
+        }
+
+        updateSelectedDatabaseLabel();
+        selectorPane.setVisible(false);
+        selectorPane.setManaged(false);
+        formPane.setVisible(true);
+        formPane.setManaged(true);
+    }
+
+    @FXML
+    private void handleChangeDatabase() {
+        formPane.setVisible(false);
+        formPane.setManaged(false);
+        selectorPane.setVisible(true);
+        selectorPane.setManaged(true);
     }
 
     @FXML
@@ -31,9 +70,9 @@ public class ConnectionDialogController {
 
         if (url == null || url.isEmpty() || user == null || user.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Datos incompletos");
+            alert.setTitle("Missing fields");
             alert.setHeaderText(null);
-            alert.setContentText("La URL y el usuario son obligatorios.");
+            alert.setContentText("The url and the user are required");
             alert.showAndWait();
             return;
         }
@@ -45,20 +84,36 @@ public class ConnectionDialogController {
                 mainController.addConnection(connection);
             }
             // close dialog
-            Stage stage = (Stage) urlField.getScene().getWindow();
-            stage.close();
+            closeDialog();
         } catch (Exception ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error de conexión");
+            alert.setTitle("Connection error");
             alert.setHeaderText(null);
-            alert.setContentText("No se pudo establecer la conexión:\n" + ex.getMessage());
+            alert.setContentText("Cant establish connection with " + selectedDatabaseType + ":\n" + ex.getMessage());
             alert.showAndWait();
         }
     }
 
     @FXML
     private void handleCancel() {
-        Stage stage = (Stage) urlField.getScene().getWindow();
+        closeDialog();
+    }
+
+    @FXML
+    private void handleTestConnection() {
+        System.out.print("Test connection");
+        //TODO: check the connection with the current properties and show a message for the result. Show alert dialog with message.
+
+    }
+
+    private void updateSelectedDatabaseLabel() {
+        if (selectedDbLabel != null) {
+            selectedDbLabel.setText("Database selected: " + selectedDatabaseType);
+        }
+    }
+
+    private void closeDialog() {
+        Stage stage = (Stage) aliasField.getScene().getWindow();
         stage.close();
     }
 }

@@ -12,7 +12,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -107,7 +106,7 @@ public class MainController {
     @FXML
     public void addConnection(com.manager.model.ConnectionSql connection) {
         savedConnections.add(connection);
-        System.out.println("Conexión guardada: " + connection);
+        System.out.println("Saved connection: " + connection);
     }
 
     private void loadTreeMenu(){

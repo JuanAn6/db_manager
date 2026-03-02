@@ -11,11 +11,11 @@
     <top>
         <MenuBar>
             <menus>
-                <Menu text="Opciones">
+                <Menu text="Options">
                     <items>
                         <MenuItem text="Register User"
                                   onAction="#goToRegister"/>
-                        <MenuItem text="Inicio"
+                        <MenuItem text="Home"
                                   onAction="#goToHome"/>
                         <MenuItem text="New Connection"
                                   onAction="#openNewConnection"/>
