@@ -68,6 +68,8 @@ public class MainController {
             // dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.setTitle("New Connection");
             dialog.setScene(new Scene(root));
+            dialog.setWidth(600);
+            dialog.setHeight(400);
             dialog.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,7 +98,7 @@ public class MainController {
         if (toggleSideMenu.isSelected()) {
             if (!splitPane.getItems().contains(sideMenu)) {
                 splitPane.getItems().add(0, sideMenu);
-                splitPane.setDividerPositions(0.1);
+                splitPane.setDividerPositions(0.15);
             }
         } else {
             splitPane.getItems().remove(sideMenu);

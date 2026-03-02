@@ -35,7 +35,7 @@
 
     <center>
         
-        <SplitPane fx:id="splitPane" dividerPositions="0.3">
+        <SplitPane fx:id="splitPane" dividerPositions="0.05">
             <!-- Lateral panel -->
             <VBox fx:id="sideMenu">
                 <Label text="Menú lateral"/>

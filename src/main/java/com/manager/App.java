@@ -8,17 +8,19 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        SceneManager.setStage(stage);
-        SceneManager.load("main.fxml");
-
+        
         // initial window size
-        stage.setWidth(1650);
-        stage.setHeight(1080);
+        stage.setWidth(1300);
+        stage.setHeight(800);
         stage.centerOnScreen();
 
         // stage.setMaximized(true);
 
         stage.setTitle("DB Manager");
+        
+        SceneManager.setStage(stage);
+        SceneManager.load("main.fxml");
+
         stage.show();
     }
 
