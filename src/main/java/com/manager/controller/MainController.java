@@ -38,8 +38,7 @@ public class MainController {
     @FXML
     private CheckMenuItem toggleSideMenu;
 
-
-    private ConnectionController connectionController;
+    // private ConnectionController connectionController;
 
     // keep track of created connections
     private final List<com.manager.model.ConnectionSql> savedConnections = new ArrayList<>();
@@ -48,7 +47,6 @@ public class MainController {
     public void initialize() {
         loadView("home.fxml"); // vista inicial
         loadTreeMenu();
-
     }
 
     @FXML
@@ -109,6 +107,11 @@ public class MainController {
     public void addConnection(com.manager.model.ConnectionSql connection) {
         savedConnections.add(connection);
         System.out.println("Saved connection: " + connection);
+        //TODO: Add contection to de TreeView
+
+        //TODO: Event to load databases...
+
+        //TODO: Event to load tables when open database...
     }
 
     private void loadTreeMenu(){
@@ -143,6 +146,8 @@ public class MainController {
         menuTree.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.isLeaf()) {
                 System.out.println("Selected: " + newVal.getValue());
+            }else if(newVal != null && !newVal.isLeaf()){
+                System.out.println("Selected not last item: " + newVal.getValue());
             }
         });
 

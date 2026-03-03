@@ -17,7 +17,9 @@ public class ConnectionDialogController {
     @FXML private VBox selectorPane;
     @FXML private VBox formPane;
     @FXML private Label selectedDbLabel;
-    @FXML private TextField aliasField;
+    @FXML private Label nameFieldLabel;
+    @FXML private Label urlFieldLabel;
+    @FXML private TextField nameField;
     @FXML private TextField urlField;
     @FXML private TextField userField;
     @FXML private PasswordField passwordField;
@@ -63,7 +65,7 @@ public class ConnectionDialogController {
 
     @FXML
     private void handleCreate() {
-        String alias = aliasField.getText();
+        String name = nameField.getText();
         String url = urlField.getText();
         String user = userField.getText();
         String password = passwordField.getText();
@@ -77,7 +79,7 @@ public class ConnectionDialogController {
             return;
         }
 
-        ConnectionSql connection = new ConnectionSql(alias, url, user, password);
+        ConnectionSql connection = new ConnectionSql(name, url, user, password);
         try {
             connection.connect(url, user, password);
             if (mainController != null) {
@@ -107,13 +109,13 @@ public class ConnectionDialogController {
     }
 
     private void updateSelectedDatabaseLabel() {
-        if (selectedDbLabel != null) {
-            selectedDbLabel.setText("Database selected: " + selectedDatabaseType);
-        }
+        if (selectedDbLabel != null) selectedDbLabel.setText("Database selected: " + selectedDatabaseType);
+        if (nameFieldLabel != null) nameFieldLabel.setText("Connection name: ");
+        if (urlFieldLabel != null) urlFieldLabel.setText("URL JDBC (ex. jdbc:mysql://localhost:3306/):");
     }
 
     private void closeDialog() {
-        Stage stage = (Stage) aliasField.getScene().getWindow();
+        Stage stage = (Stage) nameField.getScene().getWindow();
         stage.close();
     }
 }

@@ -118,7 +118,9 @@
             <Label text="New SQL connection" styleClass="dialog-title" />
             <Label fx:id="selectedDbLabel" styleClass="selected-db-label" />
 
+            <Label fx:id="nameFieldLabel" styleClass="selected-db-label" />
             <TextField fx:id="nameField" promptText="Connection name" />
+            <Label fx:id="urlFieldLabel" styleClass="selected-db-label" />
             <TextField fx:id="urlField" promptText="URL JDBC (ex. jdbc:mysql://localhost:3306/)" />
             <TextField fx:id="userField" promptText="User" />
             <PasswordField fx:id="passwordField" promptText="Password" />

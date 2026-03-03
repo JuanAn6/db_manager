@@ -13,7 +13,7 @@ public class ConnectionSql {
     private String url;
     private String user;
     private String password;
-    private String alias;
+    private String name;
 
     public ConnectionSql() {
     }
@@ -21,8 +21,8 @@ public class ConnectionSql {
     /**
      * Convenience constructor that also remembers parameters.
      */
-    public ConnectionSql(String alias, String url, String user, String password) {
-        this.alias = alias;
+    public ConnectionSql(String name, String url, String user, String password) {
+        this.name = name;
         this.url = url;
         this.user = user;
         this.password = password;
@@ -87,18 +87,18 @@ public class ConnectionSql {
         return password;
     }
 
-    public String getAlias() {
-        return alias;
+    public String getName() {
+        return name;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        if (alias != null && !alias.isEmpty()) {
-            return alias + " (" + url + ")";
+        if (name != null && !name.isEmpty()) {
+            return name + " (" + url + ")";
         }
         return url;
     }

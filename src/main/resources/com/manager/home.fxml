@@ -7,12 +7,7 @@
             fx:controller="com.manager.controller.HomeController">
 
     <center>
-        <TableView fx:id="tableView">
-            <columns>
-                <TableColumn fx:id="nameColumn" text="Nombre" />
-                <TableColumn fx:id="ageColumn" text="Edad" />
-            </columns>
-        </TableView>
+        <Label text="DB Manager java" styleClass="dialog-title" />
     </center>
 
 </BorderPane>
