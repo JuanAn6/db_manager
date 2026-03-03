@@ -1,5 +1,6 @@
 package com.manager.controller;
 
+import com.manager.model.ConnectionSql;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -8,7 +9,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -38,15 +38,17 @@ public class MainController {
     @FXML
     private CheckMenuItem toggleSideMenu;
 
+    private MenuTreeController menuTreeController;
+
     // private ConnectionController connectionController;
 
     // keep track of created connections
-    private final List<com.manager.model.ConnectionSql> savedConnections = new ArrayList<>();
+    private final List<ConnectionSql> savedConnections = new ArrayList<>();
 
     @FXML
     public void initialize() {
         loadView("home.fxml"); // vista inicial
-        loadTreeMenu();
+        menuTreeController = new MenuTreeController(menuTree);
     }
 
     @FXML
@@ -104,54 +106,14 @@ public class MainController {
     }
 
     @FXML
-    public void addConnection(com.manager.model.ConnectionSql connection) {
+    public void addConnection(ConnectionSql connection) {
         savedConnections.add(connection);
         System.out.println("Saved connection: " + connection);
-        //TODO: Add contection to de TreeView
+        menuTreeController.addConnection(connection);
 
         //TODO: Event to load databases...
 
         //TODO: Event to load tables when open database...
     }
-
-    private void loadTreeMenu(){
-        // Root node (Hiden if we set it)
-        TreeItem<String> root = new TreeItem<>("Root");
-        root.setExpanded(true);
-
-        TreeItem<String> category1 = new TreeItem<>("Manage");
-        category1.getChildren().addAll(java.util.Arrays.asList(
-            new TreeItem<>("Users"),
-            new TreeItem<>("Products"),
-            new TreeItem<>("Orders")
-        ));
-
-        TreeItem<String> category2 = new TreeItem<>("Settings");
-        category2.getChildren().addAll(java.util.Arrays.asList(
-            new TreeItem<>("General"),
-            new TreeItem<>("Security"),
-            new TreeItem<>("Notifications")
-        ));
-
-        // Add categories to root node
-        root.getChildren().addAll(java.util.Arrays.asList(category1, category2));
-
-        // Set the TreeView
-        menuTree.setRoot(root);
-
-        // Hide root item
-        // menuTree.setShowRoot(false);
-
-        //Click event
-        menuTree.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.isLeaf()) {
-                System.out.println("Selected: " + newVal.getValue());
-            }else if(newVal != null && !newVal.isLeaf()){
-                System.out.println("Selected not last item: " + newVal.getValue());
-            }
-        });
-
-    }
-
 
 }
