@@ -2,7 +2,6 @@ package com.manager.controller;
 
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -11,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import com.manager.model.ConnectionSql;
+import com.manager.util.AlertUtils;
 
 public class ConnectionDialogController {
 
@@ -71,11 +71,7 @@ public class ConnectionDialogController {
         String password = passwordField.getText();
 
         if (url == null || url.isEmpty() || user == null || user.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Missing fields");
-            alert.setHeaderText(null);
-            alert.setContentText("The url and the user are required");
-            alert.showAndWait();
+            AlertUtils.showWarning("The url and the user are required");
             return;
         }
 
@@ -88,11 +84,7 @@ public class ConnectionDialogController {
             // close dialog
             closeDialog();
         } catch (Exception ex) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Connection error");
-            alert.setHeaderText(null);
-            alert.setContentText("Cant establish connection with " + selectedDatabaseType + ":\n" + ex.getMessage());
-            alert.showAndWait();
+            AlertUtils.showError("Cant establish connection with " + selectedDatabaseType + ":\n" + ex.getMessage());
         }
     }
 

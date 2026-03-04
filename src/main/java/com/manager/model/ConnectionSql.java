@@ -37,6 +37,7 @@ public class ConnectionSql {
     }
 
     public List<Database> getDatabases() throws SQLException {
+        ensureConnected();
         databases.clear();
 
         DatabaseMetaData metaData = connection.getMetaData();
@@ -50,6 +51,16 @@ public class ConnectionSql {
         }
 
         return databases;
+    }
+
+    private void ensureConnected() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            return;
+        }
+        if (url == null || url.isBlank() || user == null || user.isBlank()) {
+            throw new SQLException("Missing connection parameters");
+        }
+        connect(url, user, password);
     }
 
     private void loadTables(Database database) throws SQLException {
