@@ -120,10 +120,6 @@ public class MainController {
         } catch (IOException ex) {
             AlertUtils.showWarning("Connection was created but could not be saved to disk:\n" + ex.getMessage());
         }
-
-        //TODO: Event to load databases...
-
-        //TODO: Event to load tables when open database...
     }
 
     private void loadPersistedConnections() {
