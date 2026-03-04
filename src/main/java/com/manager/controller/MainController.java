@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
@@ -44,11 +45,13 @@ public class MainController {
 
     // keep track of created connections
     private final List<ConnectionSql> savedConnections = new ArrayList<>();
+    private final PersistController persistController = new PersistController();
 
     @FXML
     public void initialize() {
         loadView("home.fxml"); // vista inicial
         menuTreeController = new MenuTreeController(menuTree);
+        loadPersistedConnections();
     }
 
     @FXML
@@ -108,12 +111,30 @@ public class MainController {
     @FXML
     public void addConnection(ConnectionSql connection) {
         savedConnections.add(connection);
-        System.out.println("Saved connection: " + connection);
         menuTreeController.addConnection(connection);
+        System.out.println("Connection added: " + connection);
+
+        try {
+            persistController.saveConnection(connection);
+        } catch (IOException ex) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Persistence warning");
+            alert.setHeaderText(null);
+            alert.setContentText("Connection was created but could not be saved to disk:\n" + ex.getMessage());
+            alert.showAndWait();
+        }
 
         //TODO: Event to load databases...
 
         //TODO: Event to load tables when open database...
+    }
+
+    private void loadPersistedConnections() {
+        List<ConnectionSql> persistedConnections = persistController.loadConnections();
+        for (ConnectionSql connection : persistedConnections) {
+            savedConnections.add(connection);
+            menuTreeController.addConnection(connection);
+        }
     }
 
 }
