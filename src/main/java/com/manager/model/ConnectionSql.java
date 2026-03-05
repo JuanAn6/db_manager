@@ -53,7 +53,7 @@ public class ConnectionSql {
         return databases;
     }
 
-    private void ensureConnected() throws SQLException {
+    public void ensureConnected() throws SQLException {
         if (connection != null && !connection.isClosed()) {
             return;
         }
@@ -61,6 +61,16 @@ public class ConnectionSql {
             throw new SQLException("Missing connection parameters");
         }
         connect(url, user, password);
+    }
+
+    public Boolean checkConnection() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            return true;
+        }
+        if (url == null || url.isBlank() || user == null || user.isBlank()) {
+            throw new SQLException("Missing connection parameters");
+        }
+        return false;
     }
 
     private void loadTables(Database database) throws SQLException {
