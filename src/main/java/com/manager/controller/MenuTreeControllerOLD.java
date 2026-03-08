@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MenuTreeController {
+public class MenuTreeControllerOLD {
 
     //Icons definitions
     private static final Image SERVER_ICON = new Image(Objects.requireNonNull(MenuTreeController.class.getResource("/icons/MdiServerOutline.png"),"Icon not found: /icons/MdiServerOutline.png").toExternalForm());
@@ -37,11 +37,42 @@ public class MenuTreeController {
     private final Map<TreeItem<TreeNodeData>, Boolean> loadingStateByDatabasesFolderItem = new HashMap<>();
     private final Map<TreeItem<TreeNodeData>, Boolean> loadedStateByDatabasesFolderItem = new HashMap<>();
 
-    public MenuTreeController(TreeView<TreeNodeData> menuTree) {
+    public MenuTreeControllerOLD(TreeView<TreeNodeData> menuTree) {
         this.menuTree = menuTree;
         this.root = new TreeItem<>(new TreeNodeData("Root", null));
         this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null));
         initializeTree();
+    }
+
+    public void addConnection(ConnectionSql connection) {
+        String connectionName = connection.getName();
+        if (connectionName == null || connectionName.isBlank()) {
+            connectionName = connection.toString();
+        }
+
+        TreeItem<TreeNodeData> connectionItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON));
+        connectionByItem.put(connectionItem, connection);
+        foldersLoadedByConnectionItem.put(connectionItem, false);
+        connectionItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null))));
+        connectionItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
+            try{
+                
+                if (Boolean.TRUE.equals(newVal)) {
+                    if(connectionByItem.get(connectionItem).checkConnection()){
+                        loadConnectionFolders(connectionItem);
+                        System.out.println("LoadConnectionFolders");
+                    }else{
+                        System.out.println("ensure connection...");
+                        connectionByItem.get(connectionItem).ensureConnected();
+                        loadConnectionFolders(connectionItem);
+                    }
+                }
+            }catch(SQLException ex){
+                AlertUtils.showError("Cant establish connection with " + connectionByItem.get(connectionItem).getName() + ":\n" + ex.getMessage());
+            }
+        });
+
+        connectionsCategory.getChildren().add(connectionItem);
     }
 
     private void initializeTree() {
@@ -84,50 +115,6 @@ public class MenuTreeController {
                 System.out.println("Selected not last item: " + newVal.getValue().getName());
             }
         });
-
-        // Expand Event
-        menuTree.addEventHandler(TreeItem.branchExpandedEvent(), event -> {
-            TreeItem<Object> item = event.getTreeItem();
-            System.out.println("Expanded: " + item.getValue().toString());
-        });
-
-        //Collapse Event
-        menuTree.addEventHandler(TreeItem.branchCollapsedEvent(), event -> {
-            TreeItem<Object> item = event.getTreeItem();
-            System.out.println("Collapsed: " + item.getValue().toString());
-        });
-
-    }
-
-    public void addConnection(ConnectionSql connection) {
-        String connectionName = connection.getName();
-        if (connectionName == null || connectionName.isBlank()) {
-            connectionName = connection.toString();
-        }
-
-        TreeItem<TreeNodeData> connectionItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON));
-        connectionByItem.put(connectionItem, connection);
-        foldersLoadedByConnectionItem.put(connectionItem, false);
-        connectionItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null))));
-        connectionItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
-            try{
-                
-                if (Boolean.TRUE.equals(newVal)) {
-                    if(connectionByItem.get(connectionItem).checkConnection()){
-                        loadConnectionFolders(connectionItem);
-                        System.out.println("LoadConnectionFolders");
-                    }else{
-                        System.out.println("ensure connection...");
-                        connectionByItem.get(connectionItem).ensureConnected();
-                        loadConnectionFolders(connectionItem);
-                    }
-                }
-            }catch(SQLException ex){
-                AlertUtils.showError("Cant establish connection with " + connectionByItem.get(connectionItem).getName() + ":\n" + ex.getMessage());
-            }
-        });
-
-        connectionsCategory.getChildren().add(connectionItem);
     }
 
     private void loadConnectionFolders(TreeItem<TreeNodeData> connectionItem) {
