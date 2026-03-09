@@ -9,6 +9,9 @@ public class ConnectionSql {
     private Connection connection;
     private final List<Database> databases = new ArrayList<>();
 
+    // Tree menu properties
+    private Boolean isFoldersTreeLoaded = false;
+
     // store connection parameters so we can keep track of saved connections
     private String url;
     private String user;
@@ -95,6 +98,27 @@ public class ConnectionSql {
             connection.close();
         }
     }
+
+
+    /**
+     * TREE MENU PROPERTIES
+     */
+
+    public Boolean getIsFoldersTreeLoaded(){
+        return this.isFoldersTreeLoaded;
+    }
+
+    public void setIsFoldersTreeLoaded(Boolean val){
+        this.isFoldersTreeLoaded = val;
+    }
+
+
+
+
+    /**
+     * 
+     * CONNECTION PROPERTIES
+     */
 
     public String getUrl() {
         return url;
