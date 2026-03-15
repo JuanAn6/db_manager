@@ -3,6 +3,7 @@ package com.manager.controller;
 import com.manager.model.Database;
 import com.manager.model.ConnectionSql;
 import com.manager.model.TreeNodeData;
+import com.manager.model.TreeNodeType;
 import com.manager.util.AlertUtils;
 import javafx.concurrent.Task;
 import javafx.scene.control.TreeCell;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class MenuTreeController {
 
@@ -32,11 +34,16 @@ public class MenuTreeController {
     private final TreeItem<TreeNodeData> root;
     private final TreeItem<TreeNodeData> connectionsCategory;
     private final Map<TreeItem<TreeNodeData>, ConnectionSql> treeItemsConnections = new HashMap<>();
+    private final Map<TreeItem<TreeNodeData>, ConnectionSql> connectionByDatabasesFolderItem = new HashMap<>();
+    private final Map<TreeItem<TreeNodeData>, Boolean> loadingStateByDatabasesFolderItem = new HashMap<>();
+    private final Map<TreeItem<TreeNodeData>, Boolean> loadedStateByDatabasesFolderItem = new HashMap<>();
+    private final Map<TreeNodeType, Consumer<TreeItem<TreeNodeData>>> selectionHandlers = new HashMap<>();
 
     public MenuTreeController(TreeView<TreeNodeData> menuTree) {
         this.menuTree = menuTree;
-        this.root = new TreeItem<>(new TreeNodeData("Root", null));
-        this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null));
+        this.root = new TreeItem<>(new TreeNodeData("Root", null, TreeNodeType.ROOT));
+        this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null, TreeNodeType.CONNECTIONS_CATEGORY));
+        initializeSelectionHandlers();
         initializeTree();
     }
 
@@ -74,13 +81,7 @@ public class MenuTreeController {
 
         // Click event
         menuTree.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            
-            //TODO: buscar el tipo del elemento seleccionado para cargar lo necesarios
-
-            if(newVal != null){
-                System.out.println("Selected val"+newVal.toString());
-            }
-
+            handleSelection(newVal);
         });
 
         // Expand Event
@@ -97,6 +98,34 @@ public class MenuTreeController {
 
     }
 
+    private void initializeSelectionHandlers() {
+        selectionHandlers.put(TreeNodeType.CONNECTION, this::handleConnectionSelection);
+        selectionHandlers.put(TreeNodeType.FOLDER_DATABASES, this::handleDatabasesFolderSelection);
+    }
+
+    private void handleSelection(TreeItem<TreeNodeData> selectedItem) {
+        if (selectedItem == null || selectedItem.getValue() == null) {
+            return;
+        }
+
+        TreeNodeType type = selectedItem.getValue().getType();
+        Consumer<TreeItem<TreeNodeData>> handler = selectionHandlers.get(type);
+        if (handler != null) {
+            handler.accept(selectedItem);
+            return;
+        }
+
+        System.out.println("Selected: " + selectedItem.getValue().getName() + " (" + type + ")");
+    }
+
+    private void handleConnectionSelection(TreeItem<TreeNodeData> connectionItem) {
+        ensureConnectionAndLoadFolders(connectionItem);
+    }
+
+    private void handleDatabasesFolderSelection(TreeItem<TreeNodeData> databasesFolder) {
+        loadDatabasesFolder(databasesFolder);
+    }
+
     /**
      * Adds connection and the event to connect
      * @param connection
@@ -108,25 +137,38 @@ public class MenuTreeController {
         }
 
         //TODO: this has to be inside the connectionSql object?
-        TreeItem<TreeNodeData> conTreeItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON));
+        TreeItem<TreeNodeData> conTreeItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON, TreeNodeType.CONNECTION));
         treeItemsConnections.put(conTreeItem, connection);
+        conTreeItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
         
         //Expand connection
         conTreeItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
-            try{
-                if (treeItemsConnections.get(conTreeItem).checkConnection()) {
-                    System.out.println("Connect to the database...");
-                    
-                    //TODO: This will be inside the connection?
-                    System.out.println("Load folders after a success...");
-                    loadConnectionFolders(conTreeItem);
-                }
-            }catch(SQLException ex){
-                AlertUtils.showError("Cant establish connection with " + treeItemsConnections.get(conTreeItem).getName() + ":\n" + ex.getMessage());
+            if (Boolean.TRUE.equals(newVal)) {
+                ensureConnectionAndLoadFolders(conTreeItem);
             }
         });
 
         connectionsCategory.getChildren().add(conTreeItem);
+    }
+
+    private void ensureConnectionAndLoadFolders(TreeItem<TreeNodeData> connectionTreeItem) {
+        if (!treeItemsConnections.containsKey(connectionTreeItem)) {
+            return;
+        }
+
+        ConnectionSql conn = treeItemsConnections.get(connectionTreeItem);
+        try {
+            if (!conn.getIsFoldersTreeLoaded()) {
+                setLoadingChild(connectionTreeItem);
+            }
+            if (!conn.checkConnection()) {
+                System.out.println("Attempting database connection for: " + conn.getName());
+                conn.ensureConnected();
+            }
+            loadConnectionFolders(connectionTreeItem);
+        } catch (SQLException ex) {
+            AlertUtils.showError("Cant establish connection with " + conn.getName() + ":\n" + ex.getMessage());
+        }
     }
 
     private void loadConnectionFolders(TreeItem<TreeNodeData> connectionTreeItem) {
@@ -141,14 +183,93 @@ public class MenuTreeController {
         }
         
         connectionTreeItem.getChildren().setAll(List.of(
-            new TreeItem<>(new TreeNodeData("Databases", FOLDER_ICON)),
-            new TreeItem<>(new TreeNodeData("Users", FOLDER_ICON)),
-            new TreeItem<>(new TreeNodeData("Administer", FOLDER_ICON)),
-            new TreeItem<>(new TreeNodeData("System info", FOLDER_ICON))
+            buildDatabasesFolder(conn),
+            new TreeItem<>(new TreeNodeData("Users", FOLDER_ICON, TreeNodeType.FOLDER_USERS)),
+            new TreeItem<>(new TreeNodeData("Administer", FOLDER_ICON, TreeNodeType.FOLDER_ADMINISTER)),
+            new TreeItem<>(new TreeNodeData("System info", FOLDER_ICON, TreeNodeType.FOLDER_SYSTEM_INFO))
         ));
 
         conn.setIsFoldersTreeLoaded(true);
         
+    }
+
+    private void loadDatabasesFolder(TreeItem<TreeNodeData> databasesFolder) {
+        if (!connectionByDatabasesFolderItem.containsKey(databasesFolder)) {
+            return;
+        }
+        if (Boolean.TRUE.equals(loadedStateByDatabasesFolderItem.get(databasesFolder))) {
+            return;
+        }
+        if (Boolean.TRUE.equals(loadingStateByDatabasesFolderItem.get(databasesFolder))) {
+            return;
+        }
+
+        ConnectionSql connection = connectionByDatabasesFolderItem.get(databasesFolder);
+        loadingStateByDatabasesFolderItem.put(databasesFolder, true);
+        setLoadingChild(databasesFolder);
+
+        Task<List<Database>> loadDatabasesTask = new Task<>() {
+            @Override
+            protected List<Database> call() throws Exception {
+                return connection.getDatabases();
+            }
+        };
+
+        loadDatabasesTask.setOnSucceeded(event -> {
+            List<Database> databases = loadDatabasesTask.getValue();
+            databasesFolder.getChildren().setAll(buildDatabaseItems(databases));
+            loadedStateByDatabasesFolderItem.put(databasesFolder, true);
+            loadingStateByDatabasesFolderItem.put(databasesFolder, false);
+            System.out.println("Loading databases... finish");
+        });
+
+        loadDatabasesTask.setOnFailed(event -> {
+            Throwable error = loadDatabasesTask.getException();
+            databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData("Error loading databases", null, TreeNodeType.ERROR))));
+            loadedStateByDatabasesFolderItem.put(databasesFolder, false);
+            loadingStateByDatabasesFolderItem.put(databasesFolder, false);
+            String message = "Error loading databases: " + (error != null ? error.getMessage() : "Unknown error");
+            AlertUtils.showError(message);
+        });
+
+        Thread loaderThread = new Thread(loadDatabasesTask, "db-list-loader");
+        loaderThread.setDaemon(true);
+        loaderThread.start();
+    }
+
+    private TreeItem<TreeNodeData> buildDatabasesFolder(ConnectionSql connection) {
+        TreeItem<TreeNodeData> databasesFolder = new TreeItem<>(new TreeNodeData("Databases", FOLDER_ICON, TreeNodeType.FOLDER_DATABASES));
+        databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(DATABASES_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
+        connectionByDatabasesFolderItem.put(databasesFolder, connection);
+        loadingStateByDatabasesFolderItem.put(databasesFolder, false);
+        loadedStateByDatabasesFolderItem.put(databasesFolder, false);
+        databasesFolder.expandedProperty().addListener((obs, oldVal, newVal) -> {
+            if (Boolean.TRUE.equals(newVal)) {
+                loadDatabasesFolder(databasesFolder);
+            }
+        });
+        return databasesFolder;
+    }
+
+    private List<TreeItem<TreeNodeData>> buildDatabaseItems(List<Database> databases) {
+        if (databases == null || databases.isEmpty()) {
+            return List.of(new TreeItem<>(new TreeNodeData("No databases found", null, TreeNodeType.PLACEHOLDER)));
+        }
+
+        List<TreeItem<TreeNodeData>> databaseItems = new java.util.ArrayList<>();
+        for (Database database : databases) {
+            databaseItems.add(new TreeItem<>(new TreeNodeData(database.getName(), DATABASE_ICON, TreeNodeType.DATABASE)));
+        }
+        return databaseItems;
+    }
+
+    private void setLoadingChild(TreeItem<TreeNodeData> parentItem) {
+        if (parentItem == null) {
+            return;
+        }
+        parentItem.getChildren().setAll(
+            List.of(new TreeItem<>(new TreeNodeData(LOADING_LABEL, null, TreeNodeType.PLACEHOLDER)))
+        );
     }
     
 }

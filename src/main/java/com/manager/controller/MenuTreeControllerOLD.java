@@ -3,6 +3,7 @@ package com.manager.controller;
 import com.manager.model.Database;
 import com.manager.model.ConnectionSql;
 import com.manager.model.TreeNodeData;
+import com.manager.model.TreeNodeType;
 import com.manager.util.AlertUtils;
 import javafx.concurrent.Task;
 import javafx.scene.control.TreeCell;
@@ -39,8 +40,8 @@ public class MenuTreeControllerOLD {
 
     public MenuTreeControllerOLD(TreeView<TreeNodeData> menuTree) {
         this.menuTree = menuTree;
-        this.root = new TreeItem<>(new TreeNodeData("Root", null));
-        this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null));
+        this.root = new TreeItem<>(new TreeNodeData("Root", null, TreeNodeType.ROOT));
+        this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null, TreeNodeType.CONNECTIONS_CATEGORY));
         initializeTree();
     }
 
@@ -50,10 +51,10 @@ public class MenuTreeControllerOLD {
             connectionName = connection.toString();
         }
 
-        TreeItem<TreeNodeData> connectionItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON));
+        TreeItem<TreeNodeData> connectionItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON, TreeNodeType.CONNECTION));
         connectionByItem.put(connectionItem, connection);
         foldersLoadedByConnectionItem.put(connectionItem, false);
-        connectionItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null))));
+        connectionItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
         connectionItem.expandedProperty().addListener((obs, oldVal, newVal) -> {
             try{
                 
@@ -130,9 +131,9 @@ public class MenuTreeControllerOLD {
 
         connectionItem.getChildren().setAll(List.of(
             databasesFolder,
-            new TreeItem<>(new TreeNodeData("Users", FOLDER_ICON)),
-            new TreeItem<>(new TreeNodeData("Administer", FOLDER_ICON)),
-            new TreeItem<>(new TreeNodeData("System info", FOLDER_ICON))
+            new TreeItem<>(new TreeNodeData("Users", FOLDER_ICON, TreeNodeType.FOLDER_USERS)),
+            new TreeItem<>(new TreeNodeData("Administer", FOLDER_ICON, TreeNodeType.FOLDER_ADMINISTER)),
+            new TreeItem<>(new TreeNodeData("System info", FOLDER_ICON, TreeNodeType.FOLDER_SYSTEM_INFO))
         ));
         foldersLoadedByConnectionItem.put(connectionItem, true);
     }
@@ -150,7 +151,7 @@ public class MenuTreeControllerOLD {
 
         ConnectionSql connection = connectionByDatabasesFolderItem.get(databasesFolder);
         loadingStateByDatabasesFolderItem.put(databasesFolder, true);
-        databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(LOADING_LABEL, null))));
+        databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(LOADING_LABEL, null, TreeNodeType.PLACEHOLDER))));
 
         Task<List<Database>> loadDatabasesTask = new Task<>() {
             @Override
@@ -169,7 +170,7 @@ public class MenuTreeControllerOLD {
 
         loadDatabasesTask.setOnFailed(event -> {
             Throwable error = loadDatabasesTask.getException();
-            databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData("Error loading databases", null))));
+            databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData("Error loading databases", null, TreeNodeType.ERROR))));
             loadedStateByDatabasesFolderItem.put(databasesFolder, false);
             loadingStateByDatabasesFolderItem.put(databasesFolder, false);
             String message = "Error loading databases: " + (error != null ? error.getMessage() : "Unknown error");
@@ -182,8 +183,8 @@ public class MenuTreeControllerOLD {
     }
 
     private TreeItem<TreeNodeData> buildDatabasesFolder(ConnectionSql connection) {
-        TreeItem<TreeNodeData> databasesFolder = new TreeItem<>(new TreeNodeData("Databases", FOLDER_ICON));
-        databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(DATABASES_PLACEHOLDER_LABEL, null))));
+        TreeItem<TreeNodeData> databasesFolder = new TreeItem<>(new TreeNodeData("Databases", FOLDER_ICON, TreeNodeType.FOLDER_DATABASES));
+        databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(DATABASES_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
         connectionByDatabasesFolderItem.put(databasesFolder, connection);
         loadingStateByDatabasesFolderItem.put(databasesFolder, false);
         loadedStateByDatabasesFolderItem.put(databasesFolder, false);
@@ -198,12 +199,12 @@ public class MenuTreeControllerOLD {
 
     private List<TreeItem<TreeNodeData>> buildDatabaseItems(List<Database> databases) {
         if (databases == null || databases.isEmpty()) {
-            return List.of(new TreeItem<>(new TreeNodeData("No databases found", null)));
+            return List.of(new TreeItem<>(new TreeNodeData("No databases found", null, TreeNodeType.PLACEHOLDER)));
         }
 
         List<TreeItem<TreeNodeData>> databaseItems = new java.util.ArrayList<>();
         for (Database database : databases) {
-            databaseItems.add(new TreeItem<>(new TreeNodeData(database.getName(), DATABASE_ICON)));
+            databaseItems.add(new TreeItem<>(new TreeNodeData(database.getName(), DATABASE_ICON, TreeNodeType.DATABASE)));
         }
         return databaseItems;
     }

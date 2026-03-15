@@ -6,10 +6,12 @@ public class TreeNodeData {
 
     private final String name;
     private final Image icon;
+    private final TreeNodeType type;
 
-    public TreeNodeData(String name, Image icon) {
+    public TreeNodeData(String name, Image icon, TreeNodeType type) {
         this.name = name;
         this.icon = icon;
+        this.type = type;
     }
 
     public String getName() {
@@ -18,6 +20,10 @@ public class TreeNodeData {
 
     public Image getIcon() {
         return icon;
+    }
+
+    public TreeNodeType getType() {
+        return type;
     }
 
     @Override
