@@ -96,6 +96,18 @@ public class MenuTreeController {
             System.out.println("Collapsed: " + item.getValue().toString());
         });
 
+        //Double click event
+        menuTree.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+
+                TreeItem<TreeNodeData> selectedItem = menuTree.getSelectionModel().getSelectedItem();
+
+                if (selectedItem != null) {
+                    System.out.println("Double click: " + selectedItem.getValue().toString());
+                }
+            }
+        });
+
     }
 
     private void initializeSelectionHandlers() {
@@ -136,7 +148,6 @@ public class MenuTreeController {
             connectionName = connection.toString();
         }
 
-        //TODO: this has to be inside the connectionSql object?
         TreeItem<TreeNodeData> conTreeItem = new TreeItem<>(new TreeNodeData(connectionName, SERVER_ICON, TreeNodeType.CONNECTION));
         treeItemsConnections.put(conTreeItem, connection);
         conTreeItem.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(CONNECT_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
@@ -216,11 +227,11 @@ public class MenuTreeController {
         };
 
         loadDatabasesTask.setOnSucceeded(event -> {
+            System.out.println("Loading databases...");
             List<Database> databases = loadDatabasesTask.getValue();
             databasesFolder.getChildren().setAll(buildDatabaseItems(databases));
             loadedStateByDatabasesFolderItem.put(databasesFolder, true);
             loadingStateByDatabasesFolderItem.put(databasesFolder, false);
-            System.out.println("Loading databases... finish");
         });
 
         loadDatabasesTask.setOnFailed(event -> {
