@@ -1,25 +1,55 @@
 package com.manager.controller;
 
-import com.manager.model.Person;
+import com.manager.model.Database;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.StackPane;
+
+import java.io.IOException;
+import java.util.List;
 
 public class ListController {
 
     @FXML
-    private TableView<Person> tableView;
+    private TableView<Database> tableView;
 
     @FXML
-    private TableColumn<Person, String> nameColumn;
+    private TableColumn<Database, String> nameColumn;
 
-    @FXML
-    private TableColumn<Person, Integer> ageColumn;
+    private final ObservableList<Database> databases = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        ageColumn.setCellValueFactory(new PropertyValueFactory<>("age"));
+        tableView.setItems(databases);
+    }
+
+    public void setDatabases(List<Database> databases) {
+        if (databases == null) {
+            this.databases.clear();
+            return;
+        }
+        this.databases.setAll(databases);
+    }
+
+    public static void showIn(StackPane contentPane, List<Database> databases) {
+        if (contentPane == null) {
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(ListController.class.getResource("/com/manager/list.fxml"));
+            Node view = loader.load();
+            ListController controller = loader.getController();
+            controller.setDatabases(databases);
+            contentPane.getChildren().setAll(view);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

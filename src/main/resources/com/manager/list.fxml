@@ -9,8 +9,7 @@
     <center>
         <TableView fx:id="tableView">
             <columns>
-                <TableColumn fx:id="nameColumn" text="Nombre" />
-                <TableColumn fx:id="ageColumn" text="Edad" />
+                <TableColumn fx:id="nameColumn" text="Database" />
             </columns>
         </TableView>
     </center>

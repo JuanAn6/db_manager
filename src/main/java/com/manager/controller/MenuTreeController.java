@@ -11,8 +11,10 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ public class MenuTreeController {
     
     //Properties
     private final TreeView<TreeNodeData> menuTree;
+    private final StackPane contentPane;
     private final TreeItem<TreeNodeData> root;
     private final TreeItem<TreeNodeData> connectionsCategory;
     private final Map<TreeItem<TreeNodeData>, ConnectionSql> treeItemsConnections = new HashMap<>();
@@ -39,8 +42,9 @@ public class MenuTreeController {
     private final Map<TreeItem<TreeNodeData>, Boolean> loadedStateByDatabasesFolderItem = new HashMap<>();
     private final Map<TreeNodeType, Consumer<TreeItem<TreeNodeData>>> selectionHandlers = new HashMap<>();
 
-    public MenuTreeController(TreeView<TreeNodeData> menuTree) {
+    public MenuTreeController(TreeView<TreeNodeData> menuTree, StackPane contentPane) {
         this.menuTree = menuTree;
+        this.contentPane = contentPane;
         this.root = new TreeItem<>(new TreeNodeData("Root", null, TreeNodeType.ROOT));
         this.connectionsCategory = new TreeItem<>(new TreeNodeData("Connections", null, TreeNodeType.CONNECTIONS_CATEGORY));
         initializeSelectionHandlers();
@@ -102,8 +106,11 @@ public class MenuTreeController {
 
                 TreeItem<TreeNodeData> selectedItem = menuTree.getSelectionModel().getSelectedItem();
 
-                if (selectedItem != null) {
+                if (selectedItem != null && selectedItem.getValue() != null) {
                     System.out.println("Double click: " + selectedItem.getValue().toString());
+                    if (selectedItem.getValue().getType() == TreeNodeType.FOLDER_DATABASES) {
+                        handleDatabasesFolderDoubleClick(selectedItem);
+                    }
                 }
             }
         });
@@ -248,6 +255,44 @@ public class MenuTreeController {
         loaderThread.start();
     }
 
+    private void handleDatabasesFolderDoubleClick(TreeItem<TreeNodeData> databasesFolder) {
+        if (contentPane == null) {
+            return;
+        }
+        ConnectionSql connection = connectionByDatabasesFolderItem.get(databasesFolder);
+        if (connection == null) {
+            return;
+        }
+
+        List<Database> databasesFromTree = buildDatabasesFromTree(databasesFolder);
+        if (!databasesFromTree.isEmpty()) {
+            ListController.showIn(contentPane, databasesFromTree);
+            return;
+        }
+
+        Task<List<Database>> loadDatabasesTask = new Task<>() {
+            @Override
+            protected List<Database> call() throws Exception {
+                return connection.getDatabases();
+            }
+        };
+
+        loadDatabasesTask.setOnSucceeded(event -> {
+            List<Database> databases = loadDatabasesTask.getValue();
+            ListController.showIn(contentPane, databases);
+        });
+
+        loadDatabasesTask.setOnFailed(event -> {
+            Throwable error = loadDatabasesTask.getException();
+            String message = "Error loading databases: " + (error != null ? error.getMessage() : "Unknown error");
+            AlertUtils.showError(message);
+        });
+
+        Thread loaderThread = new Thread(loadDatabasesTask, "db-list-view-loader");
+        loaderThread.setDaemon(true);
+        loaderThread.start();
+    }
+
     private TreeItem<TreeNodeData> buildDatabasesFolder(ConnectionSql connection) {
         TreeItem<TreeNodeData> databasesFolder = new TreeItem<>(new TreeNodeData("Databases", FOLDER_ICON, TreeNodeType.FOLDER_DATABASES));
         databasesFolder.getChildren().setAll(List.of(new TreeItem<>(new TreeNodeData(DATABASES_PLACEHOLDER_LABEL, null, TreeNodeType.PLACEHOLDER))));
@@ -272,6 +317,24 @@ public class MenuTreeController {
             databaseItems.add(new TreeItem<>(new TreeNodeData(database.getName(), DATABASE_ICON, TreeNodeType.DATABASE)));
         }
         return databaseItems;
+    }
+
+    private List<Database> buildDatabasesFromTree(TreeItem<TreeNodeData> databasesFolder) {
+        List<Database> databases = new ArrayList<>();
+        if (databasesFolder == null || databasesFolder.getChildren() == null) {
+            return databases;
+        }
+
+        for (TreeItem<TreeNodeData> child : databasesFolder.getChildren()) {
+            if (child == null || child.getValue() == null) {
+                continue;
+            }
+            if (child.getValue().getType() == TreeNodeType.DATABASE) {
+                databases.add(new Database(child.getValue().getName()));
+            }
+        }
+
+        return databases;
     }
 
     private void setLoadingChild(TreeItem<TreeNodeData> parentItem) {

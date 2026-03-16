@@ -51,7 +51,7 @@ public class MainController {
     @FXML
     public void initialize() {
         loadView("home.fxml"); // vista inicial
-        menuTreeController = new MenuTreeController(menuTree);
+        menuTreeController = new MenuTreeController(menuTree, contentPane);
         loadPersistedConnections();
     }
 
