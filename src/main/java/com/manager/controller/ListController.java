@@ -1,6 +1,7 @@
 package com.manager.controller;
 
 import com.manager.model.Database;
+import com.manager.util.AlertUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -38,18 +39,17 @@ public class ListController {
         this.databases.setAll(databases);
     }
 
-    public static void showIn(StackPane contentPane, List<Database> databases) {
-        if (contentPane == null) {
-            return;
-        }
+    public static StackPane buildDatabasesContent(List<Database> databases) {
         try {
             FXMLLoader loader = new FXMLLoader(ListController.class.getResource("/com/manager/list.fxml"));
             Node view = loader.load();
             ListController controller = loader.getController();
             controller.setDatabases(databases);
-            contentPane.getChildren().setAll(view);
+            return new StackPane(view);
         } catch (IOException e) {
             e.printStackTrace();
+            AlertUtils.showError("Could not load databases view:\n" + e.getMessage());
+            return null;
         }
     }
 }

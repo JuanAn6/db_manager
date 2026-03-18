@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -18,7 +20,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainController {
 
@@ -44,14 +49,18 @@ public class MainController {
 
     // private ConnectionController connectionController;
 
+    private final Map<Integer, Tab> managedTabs = new LinkedHashMap<>();
+    private TabPane tabManager;
+
     // keep track of created connections
     private final List<ConnectionSql> savedConnections = new ArrayList<>();
     private final PersistController persistController = new PersistController();
 
     @FXML
     public void initialize() {
+        initializeTabManager();
         loadView("home.fxml"); // vista inicial
-        menuTreeController = new MenuTreeController(menuTree, contentPane);
+        menuTreeController = new MenuTreeController(menuTree, this);
         loadPersistedConnections();
     }
 
@@ -83,6 +92,44 @@ public class MainController {
     @FXML
     private void goToHome() {
         loadView("home.fxml");
+    }
+
+    public Map<Integer, Tab> getManagedTabs() {
+        return Collections.unmodifiableMap(managedTabs);
+    }
+
+    public Tab getManagedTab(int tabId) {
+        return managedTabs.get(tabId);
+    }
+
+    public TabPane getTabManager() {
+        return tabManager;
+    }
+
+    public Tab addTab(int tabId, String title, StackPane tabContent) {
+        if (tabContent == null) {
+            return null;
+        }
+
+        ensureTabManagerVisible();
+
+        Tab existingTab = managedTabs.get(tabId);
+        if (existingTab != null) {
+            existingTab.setText(title);
+            existingTab.setContent(tabContent);
+            tabManager.getSelectionModel().select(existingTab);
+            return existingTab;
+        }
+
+        Tab tab = new Tab(title);
+        tab.setClosable(true);
+        tab.setContent(tabContent);
+        tab.setOnClosed(event -> handleTabClosed(tabId));
+
+        managedTabs.put(tabId, tab);
+        tabManager.getTabs().add(tab);
+        tabManager.getSelectionModel().select(tab);
+        return tab;
     }
 
     private void loadView(String fxml) {
@@ -127,6 +174,25 @@ public class MainController {
         for (ConnectionSql connection : persistedConnections) {
             savedConnections.add(connection);
             menuTreeController.addConnection(connection);
+        }
+    }
+
+    private void initializeTabManager() {
+        tabManager = new TabPane();
+        tabManager.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
+    }
+
+    private void ensureTabManagerVisible() {
+        if (tabManager == null) {
+            initializeTabManager();
+        }
+        contentPane.getChildren().setAll(tabManager);
+    }
+
+    private void handleTabClosed(int tabId) {
+        managedTabs.remove(tabId);
+        if (managedTabs.isEmpty()) {
+            loadView("home.fxml");
         }
     }
 

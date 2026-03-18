@@ -38,7 +38,7 @@
         <SplitPane fx:id="splitPane" dividerPositions="0.05">
             <!-- Lateral panel -->
             <VBox fx:id="sideMenu">
-                <Label text="Menú lateral"/>
+                <Label text="Side menu"/>
                 <TreeView fx:id="menuTree"/>
             </VBox>
             <!-- Main content -->

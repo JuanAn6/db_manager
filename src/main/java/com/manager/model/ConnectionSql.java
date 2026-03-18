@@ -48,12 +48,30 @@ public class ConnectionSql {
 
         while (rs.next()) {
             String dbName = rs.getString("TABLE_CAT");
-            Database db = new Database(dbName);
-            loadTables(db);
-            databases.add(db);
+            databases.add(new Database(dbName));
         }
 
         return databases;
+    }
+
+    public List<Table> getTables(String databaseName) throws SQLException {
+        ensureConnected();
+
+        List<Table> tables = new ArrayList<>();
+        DatabaseMetaData metaData = connection.getMetaData();
+
+        try (ResultSet rs = metaData.getTables(
+                databaseName,
+                null,
+                "%",
+                new String[]{"TABLE"}
+        )) {
+            while (rs.next()) {
+                tables.add(new Table(rs.getString("TABLE_NAME")));
+            }
+        }
+
+        return tables;
     }
 
     public void ensureConnected() throws SQLException {
@@ -74,23 +92,6 @@ public class ConnectionSql {
             throw new SQLException("Missing connection parameters");
         }
         return false;
-    }
-
-    private void loadTables(Database database) throws SQLException {
-
-        DatabaseMetaData metaData = connection.getMetaData();
-
-        ResultSet rs = metaData.getTables(
-                database.getName(), // catalog
-                null,               // schema
-                "%",                // table name pattern
-                new String[]{"TABLE"}
-        );
-
-        while (rs.next()) {
-            String tableName = rs.getString("TABLE_NAME");
-            database.addTable(new Table(tableName));
-        }
     }
 
     public void close() throws SQLException {
